@@ -15,9 +15,15 @@ export default function DashboardLayout({
     const pathname = usePathname();
     const router = useRouter();
 
-    const handleLogout = () => {
-        // In a real app, handle session removal here
-        router.push('/login');
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            router.push('/login');
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Fallback redirect
+            router.push('/login');
+        }
     };
 
     const navItems = [
@@ -63,8 +69,8 @@ export default function DashboardLayout({
                                 href={item.href}
                                 onClick={() => setIsSidebarOpen(false)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium transition-all duration-200 ${isActive
-                                        ? 'bg-primary text-primary-foreground shadow-md'
-                                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                                    ? 'bg-primary text-primary-foreground shadow-md'
+                                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                                     }`}
                             >
                                 <item.icon className="w-5 h-5" />

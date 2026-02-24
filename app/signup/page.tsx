@@ -12,12 +12,33 @@ export default function SignupPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (name && email && password) {
-            router.push('/dashboard');
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                router.push('/login');
+            } else {
+                setError(data.error || 'Something went wrong');
+            }
+        } catch (err) {
+            setError('Failed to connect to server');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -37,6 +58,11 @@ export default function SignupPage() {
                 </div>
 
                 <Card className="p-8 shadow-2xl border-border/50 bg-card/80 backdrop-blur-xl">
+                    {error && (
+                        <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-bold border border-destructive/20 animate-in shake-in-1">
+                            {error}
+                        </div>
+                    )}
                     <form onSubmit={handleSignup} className="space-y-6">
                         <div className="space-y-2">
                             <label htmlFor="name" className="block text-sm font-bold text-foreground/80 uppercase tracking-widest px-1">
@@ -94,9 +120,10 @@ export default function SignupPage() {
 
                         <Button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full h-14 text-xl font-bold bg-linear-to-r from-primary to-accent hover:shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all flex items-center justify-center gap-2 group"
                         >
-                            Create Account
+                            {isLoading ? 'Creating...' : 'Create Account'}
                             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </form>

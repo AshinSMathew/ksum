@@ -11,12 +11,33 @@ import Link from 'next/link';
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (email && password) {
-            router.push('/dashboard');
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                router.push('/dashboard');
+            } else {
+                setError(data.error || 'Something went wrong');
+            }
+        } catch (err) {
+            setError('Failed to connect to server');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -38,6 +59,11 @@ export default function LoginPage() {
 
                 {/* Login Card */}
                 <Card className="p-8 shadow-2xl border-border/50 bg-card/80 backdrop-blur-xl">
+                    {error && (
+                        <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-bold border border-destructive/20 animate-in shake-in-1">
+                            {error}
+                        </div>
+                    )}
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
                             <label htmlFor="email" className="block text-sm font-bold text-foreground/80 uppercase tracking-widest px-1">
@@ -74,9 +100,10 @@ export default function LoginPage() {
 
                         <Button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full h-14 text-xl font-bold bg-linear-to-r from-primary to-accent hover:shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all flex items-center justify-center gap-2 group"
                         >
-                            Sign In
+                            {isLoading ? 'Verifying...' : 'Sign In'}
                             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </form>
