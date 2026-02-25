@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, Calendar, FileText, Settings, LogOut, Menu, X, Activity, Users, ClipboardList } from 'lucide-react';
+import { Heart, Calendar, FileText, Settings, LogOut, Menu, X, Activity, Users, ClipboardList, Bot } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -57,6 +57,7 @@ export default function DashboardLayout({
         { icon: Users, label: 'My Doctors', href: '/dashboard/doctors' },
         { icon: ClipboardList, label: 'Prescriptions', href: '/dashboard/prescriptions' },
         { icon: Calendar, label: 'Appointments', href: '/dashboard/appointments' },
+        { icon: Bot, label: 'AgentCare', href: '/dashboard/agents' },
         { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ];
 
@@ -88,7 +89,9 @@ export default function DashboardLayout({
                 {/* Navigation */}
                 <nav className="p-4 space-y-2">
                     {navItems.map((item) => {
-                        const isActive = pathname === item.href;
+                        const isActive = item.href === '/dashboard'
+                            ? pathname === '/dashboard'
+                            : pathname.startsWith(item.href);
                         return (
                             <Link
                                 key={item.href}
