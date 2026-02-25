@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, Users, FileText, Settings, LogOut, Menu, X, Activity, ClipboardList } from 'lucide-react';
+import { Heart, Users, FileText, Settings, LogOut, Menu, X, Activity, ClipboardList, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -53,6 +53,7 @@ export default function DoctorLayout({
     const navItems = [
         { icon: Activity, label: 'Doctor Hub', href: '/doctor/dashboard' },
         { icon: Users, label: 'My Patients', href: '/doctor/patients' },
+        { icon: Calendar, label: 'Appointments', href: '/doctor/appointments' },
         { icon: ClipboardList, label: 'Requests', href: '/doctor/requests' },
         { icon: Settings, label: 'Account Settings', href: '/doctor/settings' },
     ];
