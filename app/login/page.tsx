@@ -30,7 +30,11 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (response.ok) {
-                router.push('/dashboard');
+                if (data.user.role === 'doctor') {
+                    router.push('/doctor/dashboard');
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 setError(data.error || 'Something went wrong');
             }

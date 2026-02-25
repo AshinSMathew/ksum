@@ -24,11 +24,14 @@ export async function POST(request: Request) {
         // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
+        // Determine role
+        const role = email.toLowerCase().endsWith('@doctor.com') ? 'doctor' : 'patient';
+
         // Create user
         const { error: insertError } = await supabase
             .from('users')
             .insert([
-                { name, email, password_hash: passwordHash }
+                { name, email, password_hash: passwordHash, role }
             ]);
 
         if (insertError) {

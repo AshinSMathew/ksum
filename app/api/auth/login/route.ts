@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         }
 
         // Create JWT
-        const token = await new SignJWT({ userId: user.id, email: user.email })
+        const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
             .setExpirationTime('24h')
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
         // Set cookie
         const response = NextResponse.json({
-            user: { id: user.id, name: user.name, email: user.email },
+            user: { id: user.id, name: user.name, email: user.email, role: user.role },
             message: 'Login successful'
         });
 

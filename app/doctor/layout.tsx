@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, Calendar, FileText, Settings, LogOut, Menu, X, Activity, Users, ClipboardList } from 'lucide-react';
+import { Heart, Users, FileText, Settings, LogOut, Menu, X, Activity, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-export default function DashboardLayout({
+export default function DoctorLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -51,18 +51,15 @@ export default function DashboardLayout({
     };
 
     const navItems = [
-        { icon: Activity, label: 'Dashboard', href: '/dashboard' },
-        { icon: FileText, label: 'Lab Reports', href: '/dashboard/reports' },
-        { icon: Heart, label: 'Health Summary', href: '/dashboard/summary' },
-        { icon: Users, label: 'My Doctors', href: '/dashboard/doctors' },
-        { icon: ClipboardList, label: 'Prescriptions', href: '/dashboard/prescriptions' },
-        { icon: Calendar, label: 'Appointments', href: '/dashboard/appointments' },
-        { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+        { icon: Activity, label: 'Doctor Hub', href: '/doctor/dashboard' },
+        { icon: Users, label: 'My Patients', href: '/doctor/patients' },
+        { icon: ClipboardList, label: 'Requests', href: '/doctor/requests' },
+        { icon: Settings, label: 'Account Settings', href: '/doctor/settings' },
     ];
 
     const getPageTitle = () => {
         const activeItem = navItems.find(item => pathname.startsWith(item.href));
-        return activeItem ? activeItem.label : 'Dashboard';
+        return activeItem ? activeItem.label : 'Doctor Dashboard';
     };
 
     return (
@@ -80,7 +77,7 @@ export default function DashboardLayout({
                         </div>
                         <div>
                             <h2 className="font-bold text-lg text-sidebar-foreground">ElderCare</h2>
-                            <p className="text-xs text-muted-foreground">Health Manager</p>
+                            <p className="text-xs text-muted-foreground font-bold italic">Doctor Portal</p>
                         </div>
                     </Link>
                 </div>
@@ -141,10 +138,18 @@ export default function DashboardLayout({
                         </div>
 
                         {/* User Avatar */}
-                        <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shadow-md cursor-pointer hover:scale-105 transition-transform">
-                            <span className="text-white font-bold text-lg">
-                                {user ? getInitials(user.name) : '...'}
-                            </span>
+                        <div className="flex items-center gap-4">
+                            <div className="hidden md:block text-right">
+                                <p className="font-bold text-sm">
+                                    {user ? `Dr. ${user.name}` : 'Loading...'}
+                                </p>
+                                <p className="text-xs text-muted-foreground uppercase font-black">Chief Specialist</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shadow-md cursor-pointer hover:scale-105 transition-transform border-4 border-background">
+                                <span className="text-white font-bold text-lg">
+                                    {user ? getInitials(user.name) : '...'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </header>

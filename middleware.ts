@@ -5,29 +5,46 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_
 
 export async function middleware(request: NextRequest) {
     const token = request.cookies.get('authToken')?.value;
-
     const { pathname } = request.nextUrl;
 
-    // Protect /dashboard routes
-    if (pathname.startsWith('/dashboard')) {
+    // Protect /dashboard and /doctor routes
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/doctor')) {
         if (!token) {
             return NextResponse.redirect(new URL('/login', request.url));
         }
 
         try {
-            await jwtVerify(token, JWT_SECRET);
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            const role = payload.role as string;
+
+            // Enforce RBAC
+            if (pathname.startsWith('/doctor') && role !== 'doctor') {
+                return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+
+            if (pathname.startsWith('/dashboard') && role === 'doctor') {
+                return NextResponse.redirect(new URL('/doctor/dashboard', request.url));
+            }
+
             return NextResponse.next();
         } catch (error) {
             console.error('JWT verification failed:', error);
-            return NextResponse.redirect(new URL('/login', request.url));
+            // On invalid token, clear it and redirect to login
+            const response = NextResponse.redirect(new URL('/login', request.url));
+            response.cookies.delete('authToken');
+            return response;
         }
     }
 
-    // Redirect to dashboard if logged in and trying to access login/signup
+    // Redirect to proper dashboard if logged in and trying to access login/signup
     if (pathname === '/login' || pathname === '/signup') {
         if (token) {
             try {
-                await jwtVerify(token, JWT_SECRET);
+                const { payload } = await jwtVerify(token, JWT_SECRET);
+                const role = payload.role as string;
+                if (role === 'doctor') {
+                    return NextResponse.redirect(new URL('/doctor/dashboard', request.url));
+                }
                 return NextResponse.redirect(new URL('/dashboard', request.url));
             } catch (error) {
                 // Token invalid, allow access to login/signup
@@ -39,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/login', '/signup'],
+    matcher: ['/dashboard/:path*', '/doctor/:path*', '/login', '/signup'],
 };
