@@ -1,11 +1,84 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { User, Bell, Eye, Lock, Save } from 'lucide-react';
+import { User, Bell, Eye, Lock, Save, Loader2 } from 'lucide-react';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 export default function SettingsPage() {
+    const [profile, setProfile] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        dob: ''
+    });
+    const [guardianPhone, setGuardianPhone] = useState('');
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isSavingGuardian, setIsSavingGuardian] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [profileRes, guardianRes] = await Promise.all([
+                    fetch('/api/user/profile'),
+                    fetch('/api/user/guardian')
+                ]);
+
+                const profileData = await profileRes.json();
+                const guardianData = await guardianRes.json();
+
+                if (profileData.user) setProfile(profileData.user);
+                if (guardianData.guardianPhone) setGuardianPhone(guardianData.guardianPhone);
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const handleSaveProfile = async () => {
+        setIsSavingProfile(true);
+        try {
+            const res = await fetch('/api/user/profile', {
+                method: 'PATCH',
+                body: JSON.stringify(profile),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+                alert('Profile updated successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to save profile:', error);
+            alert('Failed to save profile');
+        } finally {
+            setIsSavingProfile(false);
+        }
+    };
+
+    const handleSaveGuardian = async () => {
+        setIsSavingGuardian(true);
+        try {
+            const res = await fetch('/api/user/guardian', {
+                method: 'PATCH',
+                body: JSON.stringify({ guardianPhone }),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+                alert('Guardian contact saved successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to save guardian:', error);
+            alert('Failed to save guardian contact');
+        } finally {
+            setIsSavingGuardian(false);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
@@ -26,25 +99,77 @@ export default function SettingsPage() {
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-foreground/70 uppercase tracking-widest px-1">Full Name</label>
-                                <Input defaultValue="Jane Doe" className="h-14 text-lg bg-background/50 border-border/50" />
+                                <Input
+                                    value={profile.name}
+                                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                    className="h-14 text-lg bg-background/50 border-border/50"
+                                />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-foreground/70 uppercase tracking-widest px-1">Email Address</label>
-                                <Input defaultValue="jane.doe@example.com" className="h-14 text-lg bg-background/50 border-border/50" />
+                                <Input
+                                    value={profile.email}
+                                    disabled
+                                    className="h-14 text-lg bg-background/20 border-border/50 cursor-not-allowed opacity-70"
+                                />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-foreground/70 uppercase tracking-widest px-1">Phone Number</label>
-                                <Input defaultValue="+1 (555) 123-4567" className="h-14 text-lg bg-background/50 border-border/50" />
+                                <PhoneInput
+                                    value={profile.phone}
+                                    onPhoneChange={(val) => setProfile({ ...profile, phone: val })}
+                                    placeholder="Enter phone number"
+                                />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-foreground/70 uppercase tracking-widest px-1">Date of Birth</label>
-                                <Input type="date" className="h-14 text-lg bg-background/50 border-border/50" />
+                                <Input
+                                    type="date"
+                                    value={profile.dob}
+                                    onChange={(e) => setProfile({ ...profile, dob: e.target.value })}
+                                    className="h-14 text-lg bg-background/50 border-border/50"
+                                />
                             </div>
                         </div>
-                        <Button className="mt-10 h-14 px-8 text-lg font-bold gap-2 shadow-lg">
-                            <Save className="w-5 h-5" />
-                            Save Changes
+                        <Button
+                            onClick={handleSaveProfile}
+                            disabled={isSavingProfile || isLoading}
+                            className="mt-10 h-14 px-8 text-lg font-bold gap-2 shadow-lg"
+                        >
+                            {isSavingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                            {isSavingProfile ? 'Saving...' : 'Save Profile'}
                         </Button>
+                    </Card>
+
+                    {/* Guardian Settings */}
+                    <Card className="p-10 shadow-xl border-border/50 bg-card/50 backdrop-blur rounded-[40px]">
+                        <div className="flex items-center gap-4 mb-10">
+                            <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+                                <Bell className="w-6 h-6 text-red-500" />
+                            </div>
+                            <h3 className="text-2xl font-bold">Emergency Guardian</h3>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-foreground/70 uppercase tracking-widest px-1">Guardian Phone Number</label>
+                                <PhoneInput
+                                    value={guardianPhone}
+                                    onPhoneChange={(val) => setGuardianPhone(val)}
+                                    placeholder="Enter guardian phone"
+                                />
+                                <p className="text-xs text-muted-foreground px-1">
+                                    This number will be notified immediately if your vitals cross critical thresholds.
+                                </p>
+                            </div>
+                            <Button
+                                onClick={handleSaveGuardian}
+                                disabled={isSavingGuardian || isLoading}
+                                className="h-14 px-8 text-lg font-bold gap-2 shadow-lg bg-red-600 hover:bg-red-700"
+                            >
+                                {isSavingGuardian ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                {isSavingGuardian ? 'Saving...' : 'Save Guardian Info'}
+                            </Button>
+                        </div>
                     </Card>
 
                     {/* Security Settings */}

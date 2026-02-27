@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SmartwatchVitalsCard } from '@/components/SmartwatchVitalsCard';
 import Link from 'next/link';
 
 export default function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -223,6 +224,10 @@ export default function PatientDetailPage({ params }: { params: Promise<{ id: st
                             <TableIcon className="w-6 h-6" />
                         </div>
                         <h3 className="text-2xl font-black text-foreground">Recent Activity</h3>
+                    </div>
+
+                    <div className="mb-8">
+                        <SmartwatchVitalsCard showControls={false} />
                     </div>
 
                     <div className="space-y-6">

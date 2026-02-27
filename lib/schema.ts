@@ -6,6 +6,9 @@ export const users = pgTable('users', {
     email: text('email').notNull().unique(),
     passwordHash: text('password_hash').notNull(),
     role: text('role').notNull().default('patient'), // patient or doctor
+    guardianPhone: text('guardian_phone'),
+    phone: text('phone'),
+    dob: text('dob'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
